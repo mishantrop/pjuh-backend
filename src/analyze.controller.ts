@@ -1,6 +1,6 @@
-import { Controller, Get } from '@nestjs/common'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { Body, Controller, Post } from '@nestjs/common'
+// import { readFileSync } from 'fs'
+// import { resolve } from 'path'
 
 import { AppService } from './app.service'
 import { parsePackageJson } from './utils/parsePackageJson'
@@ -9,14 +9,16 @@ import { parsePackageJson } from './utils/parsePackageJson'
 export class AnalyzeController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('updates')
-  updates() {
-    const packageJsonFile = readFileSync(
-      resolve(__dirname, '../../package.json'),
-      'utf-8',
-    )
+  @Post('updates/text')
+  updates(@Body() body) {
+    // const packageJsonFile = readFileSync(
+    //   resolve(__dirname, '../../package.json'),
+    //   'utf-8',
+    // )
 
-    const info = parsePackageJson(packageJsonFile)
+    // console.log(body.text)
+
+    const info = parsePackageJson(body.text)
 
     return info
   }
