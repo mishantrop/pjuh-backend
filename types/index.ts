@@ -8,8 +8,17 @@ export type VersionType = 'fixed' | 'caret' | 'tilde'
 
 export type Package = {
   name: string
-  versionRaw: string
-  versionType: VersionType
+
+  before: {
+    versionFixed: string
+    versionRaw: string
+    versionType: VersionType
+  }
+
+  after: {
+    versionRaw?: string
+    versionFixed?: string
+  }
 }
 
 export type ParseResult = {

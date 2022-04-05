@@ -21,8 +21,16 @@ export const parsePackageJson = (content: string): ParseResult => {
       Object.keys(packageJsonObject[depType]).forEach((packageName: string) => {
         info[depType].push({
           name: packageName,
-          versionRaw: packageJsonObject[depType][packageName],
-          versionType: getVersionType(packageJsonObject[depType][packageName]),
+          before: {
+            versionFixed: packageJsonObject[depType][packageName]
+              .replace('^', '')
+              .replace('~', ''),
+            versionRaw: packageJsonObject[depType][packageName],
+            versionType: getVersionType(
+              packageJsonObject[depType][packageName],
+            ),
+          },
+          after: {},
         })
       })
     }
