@@ -1,12 +1,13 @@
-/* eslint-disable max-len */
 /* eslint-disable prettier/prettier */
 /* eslint-disable indent */
 import { HttpService } from '@nestjs/axios'
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { IsNotEmpty, IsString } from 'class-validator'
-import { getVersionPrefix } from './utils/getVersionType'
+import { readFileSync, unlinkSync } from 'fs'
+import { resolve } from 'path'
 
-import { parsePackageJson } from './utils/parsePackageJson'
+import { AnalyzeService } from './analyze.service'
 
 export class RequestText {
   @IsNotEmpty()
@@ -14,55 +15,45 @@ export class RequestText {
   text: string
 }
 
-const getPackageLatestVersion = async (httpService: HttpService, packageName: string) => {
-  const response = await httpService
-    .get(`https://registry.npmjs.org/${packageName}`)
-    .toPromise()
-
-  return response.data['dist-tags'].latest
-}
-
 @Controller('analyze')
 export class AnalyzeController {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly analyzeService: AnalyzeService,
+  ) { }
 
   @Post('updates/text')
-  async updates(@Body() body: RequestText) {
-    const info = parsePackageJson(body.text)
-
-    let parsedPackagesLimit = 3
-
-    for (let i = 0; i < info.dependencies.length; i++) {
-      if (parsedPackagesLimit <= 0) {
-        break
-      }
-      try {
-        const packageLatestVersion = await getPackageLatestVersion(this.httpService, info.dependencies[i].name)
-        info.dependencies[i].after.versionRaw = `${getVersionPrefix(info.dependencies[i].before.versionType)}${packageLatestVersion}`
-        info.dependencies[i].after.versionFixed = packageLatestVersion
-        parsedPackagesLimit--
-      } catch (error) {
-        console.error(error)
-      }
-    }
+  async text(@Body() body: RequestText) {
+    const info = await this.analyzeService.getUpdateInfo(this.httpService, body.text)
 
     return info
   }
 
-  // @Get('updates/info')
-  // async info() {
-  //   const packageJsonFile = readFileSync(
-  //     resolve(__dirname, '../../package.json'),
-  //     'utf-8',
-  //   )
+  @Post('updates/file')
+  @UseInterceptors(FileInterceptor('file', { dest: resolve(__dirname, '../../uploads') }))
+  async file(@UploadedFile() file: Express.Multer.File) {
+    console.log(file)
 
-  //   const info = parsePackageJson(example)
+    if (file.size > 4096) {
+      return {}
+    }
 
-  //   const response = await this.httpService
-  //     .get('https://registry.npmjs.org/axios')
-  //     .toPromise()
-  //   console.log(response.data['dist-tags'])
+    if (file.mimetype !== 'application/json') {
+      return {}
+    }
 
-  //   return info
-  // }
+    if (file.originalname !== 'package.json') {
+      return {}
+    }
+
+    const packageJsonContent = readFileSync(
+      resolve(__dirname, file.path),
+      'utf-8',
+    )
+    unlinkSync(resolve(__dirname, file.path))
+
+    const info = await this.analyzeService.getUpdateInfo(this.httpService, packageJsonContent)
+
+    return info
+  }
 }
