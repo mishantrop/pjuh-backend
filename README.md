@@ -1,39 +1,6 @@
-## Description
+## YAPJDUC - BackEnd
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+FrontEnd: [YAPJDUC FrontEnd](https://github.com/mishantrop/yet-another-package-json-dependencies-updates-checker-frontend)
 
-## Installation
+Based on [Nest.js](https://github.com/nestjs/nest)
 
-```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## License
-
-Nest is [MIT licensed](LICENSE).

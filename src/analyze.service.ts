@@ -1,41 +1,65 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable prettier/prettier */
 /* eslint-disable max-len */
-import { HttpService } from '@nestjs/axios'
+import { AbbreviatedPackument, getAbbreviatedPackument } from 'query-registry'
 import { Injectable } from '@nestjs/common'
 import { ParseResult } from 'types'
 
-import { getVersionPrefix } from './utils/getVersionType'
+import { isValidVersion } from './utils/isValidVersion'
 import { parsePackageJson } from './utils/parsePackageJson'
+import { getUpdatedVersion } from './utils/getUpdatedVersion'
+import { getPatchedVersion } from './utils/getPatchedVersion'
+import { cleanVersion } from './utils/cleanVersion'
 
 @Injectable()
 export class AnalyzeService {
-  async getPackageLatestVersion(httpService: HttpService, packageName: string) {
-    const response = await httpService
-      .get(`https://registry.npmjs.org/${packageName}`)
-      .toPromise()
+    async getUpdateInfo(fileContent: string): Promise<ParseResult> {
+        const info = parsePackageJson(fileContent)
 
-    return response.data['dist-tags'].latest
-  }
+        const limit = Math.min(3, info.dependencies.length)
 
-  async getUpdateInfo(httpService: HttpService, fileContent: string): Promise<ParseResult> {
-    const info = parsePackageJson(fileContent)
+        for (let i = 0; i < limit; i++) {
+            try {
+                if (!isValidVersion(info.dependencies[i].before.raw)) {
+                    info.dependencies[i].error = {
+                        code: 'invalid_version',
+                    }
+                    continue
+                }
 
-    let parsedPackagesLimit = 3
+                const { versionType } = info.dependencies[i].before
 
-    for (let i = 0; i < info.dependencies.length; i++) {
-      if (parsedPackagesLimit <= 0) {
-        break
-      }
-      try {
-        const packageLatestVersion = await this.getPackageLatestVersion(httpService, info.dependencies[i].name)
-        info.dependencies[i].after.versionRaw = `${getVersionPrefix(info.dependencies[i].before.versionType)}${packageLatestVersion}`
-        info.dependencies[i].after.versionFixed = packageLatestVersion
-        parsedPackagesLimit--
-      } catch (error) {
-        console.error(error)
-      }
+                let packument: AbbreviatedPackument
+                try {
+                    packument = await getAbbreviatedPackument({ name: info.dependencies[i].name })
+                    console.log(info.dependencies[i].name)
+                    console.log(Object.keys(packument.versions).join(', '))
+                } catch (error) {
+                    info.dependencies[i].error = {
+                        code: 'not_found',
+                    }
+                    continue
+                }
+
+                info.dependencies[i].after.latest = `${versionType}${packument['dist-tags'].latest}`
+                info.dependencies[i].after.latestFixed = packument['dist-tags'].latest
+
+                if (versionType === '') {
+                    info.dependencies[i].after.semver = packument['dist-tags'].latest
+                } else if (versionType === '^') {
+                    info.dependencies[i].after.semver = `${versionType}${getUpdatedVersion(info.dependencies[i].before.fixed, Object.keys(packument.versions))}`
+                } else if (versionType === '~') {
+                    info.dependencies[i].after.semver = `${versionType}${getPatchedVersion(info.dependencies[i].before.fixed, Object.keys(packument.versions))}`
+                }
+                if (info.dependencies[i].after.semver) {
+                    info.dependencies[i].after.semverFixed = cleanVersion(info.dependencies[i].after.semver)
+                }
+
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        return info
     }
-
-    return info
-  }
 }

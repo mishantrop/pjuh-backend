@@ -1,33 +1,17 @@
 import { VersionType } from 'types'
 
 export const getVersionType = (version: string): VersionType => {
-  if (typeof version !== 'string' || version.length === 0) {
-    throw new TypeError('Invalid Version Value')
-  }
+    if (typeof version !== 'string' || version.length === 0) {
+        throw new TypeError('Invalid Version Value')
+    }
 
-  if (version.includes('^')) {
-    return 'caret'
-  }
+    if (version.startsWith('^')) {
+        return '^'
+    }
 
-  if (version.includes('~')) {
-    return 'tilde'
-  }
+    if (version.startsWith('~')) {
+        return '~'
+    }
 
-  return 'fixed'
-}
-
-export const getVersionPrefix = (versionType: VersionType): string => {
-  if (typeof versionType !== 'string' || versionType.length === 0) {
-    throw new TypeError('Invalid Version Type')
-  }
-
-  if (versionType === 'caret') {
-    return '^'
-  }
-
-  if (versionType === 'tilde') {
-    return '~'
-  }
-
-  return ''
+    return ''
 }

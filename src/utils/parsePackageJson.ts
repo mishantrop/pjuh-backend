@@ -1,40 +1,38 @@
-import { DependencyCategory, ParseResult } from 'types'
+import { PackageJSON } from 'query-registry'
+import { DependencyCategory, ParseResult } from '../../types'
+import { cleanVersion } from './cleanVersion'
 import { getVersionType } from './getVersionType'
 
 export const parsePackageJson = (content: string): ParseResult => {
-  const info: ParseResult = {
-    [DependencyCategory.dependencies]: [],
-    [DependencyCategory.devDependencies]: [],
-    [DependencyCategory.peerDependencies]: [],
-  }
-
-  let packageJsonObject: { [x: string]: { [x: string]: string } }
-
-  try {
-    packageJsonObject = JSON.parse(content)
-  } catch {
-    throw new Error('Poka')
-  }
-
-  Object.values(DependencyCategory).forEach((depType: keyof ParseResult) => {
-    if (depType in packageJsonObject) {
-      Object.keys(packageJsonObject[depType]).forEach((packageName: string) => {
-        info[depType].push({
-          name: packageName,
-          before: {
-            versionFixed: packageJsonObject[depType][packageName]
-              .replace('^', '')
-              .replace('~', ''),
-            versionRaw: packageJsonObject[depType][packageName],
-            versionType: getVersionType(
-              packageJsonObject[depType][packageName],
-            ),
-          },
-          after: {},
-        })
-      })
+    const info: ParseResult = {
+        [DependencyCategory.dependencies]: [],
+        [DependencyCategory.devDependencies]: [],
+        [DependencyCategory.peerDependencies]: [],
     }
-  })
 
-  return info
+  let packageJsonObject: PackageJSON
+
+    try {
+        packageJsonObject = JSON.parse(content)
+    } catch {
+        throw new Error('Poka')
+    }
+
+    Object.values(DependencyCategory).forEach((depType) => {
+        if (depType in packageJsonObject) {
+            Object.keys(packageJsonObject[depType]).forEach((name) => {
+                info[depType].push({
+                    name,
+                    before: {
+                        fixed: cleanVersion(packageJsonObject[depType][name]),
+                        raw: packageJsonObject[depType][name],
+                        versionType: getVersionType(packageJsonObject[depType][name]),
+                    },
+                    after: {},
+                })
+            })
+        }
+    })
+
+    return info
 }
