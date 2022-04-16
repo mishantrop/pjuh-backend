@@ -1,40 +1,47 @@
 export enum DependencyCategory {
-  dependencies = 'dependencies',
-  devDependencies = 'devDependencies',
-  peerDependencies = 'peerDependencies',
+    dependencies = 'dependencies',
+    devDependencies = 'devDependencies',
+    peerDependencies = 'peerDependencies',
+    optionalDependencies = 'optionalDependencies',
 }
 
+export type UpdateMode = 'SEMVER' | 'LATEST' | 'LATEST_FIXED'
 export type VersionType = '' | '^' | '~'
+export type DependencyType = 'prod' | 'dev' | 'peer' | 'optional'
 
 export type Package = {
-  name: string
+    name: string
 
-  before: {
-    fixed: string
-    raw: string
-    versionType: VersionType
-  }
+    meta: {
+        updateMode: UpdateMode
+        type: DependencyType
+        isUpdating: boolean
+    }
 
-  after: {
-    latest?: string
-    latestFixed?: string
-    semver?: string
-    semverFixed?: string
-  }
+    before: {
+        fixed: string
+        raw: string
+        versionType: VersionType
+    }
 
-  error?: {
-    code: 'invalid_version' | 'not_found'
-  }
+    after: {
+        latest?: string
+        latestFixed?: string
+        semver?: string
+        // semverFixed?: string
+    }
+
+    error?: {
+        code: 'invalid_version' | 'not_found'
+    }
 }
 
 export type ParseResult = {
-  dependencies: Package[]
-  devDependencies: Package[]
-  peerDependencies: Package[]
+    allDependencies: Package[]
 }
 
 export type Version = {
-  major: number
-  minor: number
-  patch: number
+    major: number
+    minor: number
+    patch: number
 }
