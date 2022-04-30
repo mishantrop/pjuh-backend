@@ -9,3 +9,6 @@ FrontEnd: [PJUH FrontEnd](https://github.com/mishantrop/pjuh-frontend)
 - Database: [PostgreSQL](https://github.com/postgres)
 - ORM: [MicroORM](https://github.com/mikro-orm)
 - Containerization: [Docker](https://github.com/docker)
+
+## Roadmap
+- Notify about updates via bot
