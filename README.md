@@ -1,6 +1,11 @@
-# YAPJDUC - BackEnd
+# PJUH - Package Json Updates Helper
 
-FrontEnd: [YAPJDUC FrontEnd](https://github.com/mishantrop/yet-another-package-json-dependencies-updates-checker-frontend)
+Backend for service
 
-Based on [Nest.js](https://github.com/nestjs/nest)
+FrontEnd: [PJUH FrontEnd](https://github.com/mishantrop/pjuh-frontend)
 
+Tech Stack:
+- REST API: [Nest.js](https://github.com/nestjs/nest)
+- PostgreSQL
+- MicroORM
+- Docker
