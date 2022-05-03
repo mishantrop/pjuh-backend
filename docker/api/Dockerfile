@@ -1,13 +1,13 @@
-FROM node:16 as dev
+FROM node:16.15
 
 WORKDIR /usr/src/app
 
-COPY package.json package-lock.json ./
+# Copy necessary files
+COPY package.json package-lock.json nest-cli.json tsconfig.build.json tsconfig.json src types ./
 
+# Install deendencies
 RUN npm ci
-
 RUN npm install glob rimraf
 
-COPY . .
-
+# Build app
 RUN npm run build

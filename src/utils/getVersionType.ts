@@ -1,4 +1,4 @@
-import { VersionType } from 'types'
+import { VersionType } from '../../types'
 
 export const getVersionType = (version: string): VersionType => {
     if (typeof version !== 'string' || version.length === 0) {

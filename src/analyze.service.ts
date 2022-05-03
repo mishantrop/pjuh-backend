@@ -2,7 +2,8 @@
 /* eslint-disable prettier/prettier */
 import { AbbreviatedPackument, getAbbreviatedPackument } from 'query-registry'
 import { Injectable } from '@nestjs/common'
-import { ParseResult } from 'types'
+
+import { ParseResult } from '../types'
 
 import { isValidVersion } from './utils/isValidVersion'
 import { parsePackageJson } from './utils/parsePackageJson'
